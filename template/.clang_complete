@@ -8,6 +8,8 @@
 -DSTM32F303xC
 -DUSE_FULL_LL_DRIVER
 
--std=gnu11
+-std=c11
+-m32
 
 -D__STATIC_INLINE=inline
+

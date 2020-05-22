@@ -24,6 +24,8 @@ SRCS =	$(wildcard source/*.c) \
 		../../STM32Cube_FW_F3_V1.11.0/Drivers/CMSIS/Device/ST/STM32F3xx/Source/Templates/system_stm32f3xx.c \
 		../../STM32Cube_FW_F3_V1.11.0/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_ll_gpio.c \
 		../../STM32Cube_FW_F3_V1.11.0/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_ll_rcc.c \
+		../../STM32Cube_FW_F3_V1.11.0/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_ll_utils.c \
+		../../STM32Cube_FW_F3_V1.11.0/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_ll_usart.c \
 
 
 
@@ -42,7 +44,7 @@ DEPS = $(SRCS:.c=.d) $(SRCS_ASM:.s=.d)
 CFLAGS = $(INCLUDES)  -Wall -std=gnu11 -g -ffunction-sections -Os -mthumb -mfloat-abi=softfp -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -DSTM32F303xC -DUSE_FULL_LL_DRIVER
 ASFLAGS = $(INCLUDES) -g -mthumb -mfloat-abi=softfp -mcpu=cortex-m4 -mfpu=fpv4-sp-d16
 LDSCRIPT = linker.ld
-LDFLAGS = -T$(LDSCRIPT) -Wl,-gc-sections -mthumb -mcpu=cortex-m4
+LDFLAGS = -T$(LDSCRIPT) -Wl,-gc-sections -mthumb -mcpu=cortex-m4 -specs=nosys.specs
 
 
 
