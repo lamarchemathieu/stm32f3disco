@@ -9,7 +9,8 @@
 #include "stm32f3xx_ll_usart.h"
 
 void SystemClock_Config(void);
-void print(const char *str);
+void usart_put(char c);
+void usart_print(const char *str);
 
 
 int main(void)
@@ -41,7 +42,6 @@ int main(void)
 	LL_RCC_GetSystemClocksFreq(&rcc_clocks);
 	SysTick_Config(rcc_clocks.HCLK_Frequency / 10);
 
-
 	LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_USART1);
 	LL_USART_InitTypeDef usart;
 	LL_USART_StructInit(&usart);
@@ -59,18 +59,19 @@ int main(void)
 
 	NVIC_EnableIRQ(USART1_IRQn);
 
+	usart_print("Hello world !\r\n");
+
 	char tmp[64];
 
 	sprintf(tmp, "SYSCLK_Frequency = %ld\r\n", rcc_clocks.SYSCLK_Frequency);
-	print(tmp);
+	usart_print(tmp);
 	sprintf(tmp, "HCLK_Frequency = %ld\r\n", rcc_clocks.HCLK_Frequency);
-	print(tmp);
+	usart_print(tmp);
 	sprintf(tmp, "PCLK1_Frequency = %ld\r\n", rcc_clocks.PCLK1_Frequency);
-	print(tmp);
+	usart_print(tmp);
 	sprintf(tmp, "PCLK2_Frequency = %ld\r\n", rcc_clocks.PCLK2_Frequency);
-	print(tmp);
+	usart_print(tmp);
 
-	print("Hello world !\r\n");
 
 	while (1)
 	{
@@ -85,19 +86,12 @@ void SysTick_Handler(void)
 
 void USART1_IRQHandler(void)
 {
-	if(LL_USART_IsActiveFlag_RXNE(USART1) && LL_USART_IsEnabledIT_RXNE(USART1))
+	if(LL_USART_IsActiveFlag_RXNE(USART1))
 	{
 		uint8_t c = LL_USART_ReceiveData8(USART1);
-
-		while(LL_USART_IsActiveFlag_TC(USART1) == 0)
-		{
-
-		}
 		LL_USART_TransmitData8(USART1, c);
-
+		LL_GPIO_TogglePin(GPIOE, LL_GPIO_PIN_9);
 	}
-
-	LL_GPIO_TogglePin(GPIOE, LL_GPIO_PIN_9);
 }
 
 
@@ -105,48 +99,36 @@ void SystemClock_Config(void)
 {
 	LL_FLASH_SetLatency(LL_FLASH_LATENCY_2);
 
-	if (LL_RCC_HSE_IsReady() == 0)
-	{
-		LL_RCC_HSE_Enable(); 
-		while(LL_RCC_HSE_IsReady() != 1)
-		{
-		};
-	}
+	LL_UTILS_PLLInitTypeDef pll;
+	pll.Prediv = LL_RCC_PREDIV_DIV_2;
+	pll.PLLMul = LL_RCC_PLL_MUL_16;
 
-	LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSE_DIV_2, LL_RCC_PLL_MUL_16);
+	LL_UTILS_ClkInitTypeDef clk;
+	clk.APB1CLKDivider = LL_RCC_APB1_DIV_2;
+	clk.APB2CLKDivider = LL_RCC_APB2_DIV_1;
+	clk.AHBCLKDivider = LL_RCC_SYSCLK_DIV_1;
 
-	LL_RCC_PLL_Enable();
-	while(LL_RCC_PLL_IsReady() != 1) 
-	{
-	};
-
-	/* Sysclk activation on the main PLL */
-	LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
-	LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
-	while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL)
-	{
-	};
-
-	/* Set APB1 & APB2 prescaler*/
-	LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_2);
-	LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
+	LL_PLL_ConfigSystemClock_HSE(8000000, LL_UTILS_HSEBYPASS_OFF, &pll, &clk);
 
 	LL_RCC_SetUSARTClockSource(LL_RCC_USART1_CLKSOURCE_SYSCLK);
-
-	LL_SetSystemCoreClock(64000000);
 }
 
-void print(const char *str)
+void usart_put(char c)
+{
+	while(LL_USART_IsActiveFlag_TC(USART1) == 0)
+	{
+
+	}
+	LL_USART_TransmitData8(USART1, c);
+}
+
+void usart_print(const char *str)
 {
 	uint32_t i=0;
 
 	while(str[i])
 	{
-		while(LL_USART_IsActiveFlag_TC(USART1) == 0)
-		{
-
-		}
-		LL_USART_TransmitData8(USART1, str[i]);
+		usart_put(str[i]);
 		i++;
 	}
 }
