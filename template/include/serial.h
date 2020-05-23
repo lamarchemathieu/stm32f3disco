@@ -14,6 +14,6 @@ void serial_print_hex8(uint8_t v);
 void serial_print_bin32(uint32_t v);
 void serial_print_bin16(uint16_t v);
 void serial_print_bin8(uint8_t v);
-void serial_print_dec(uint32_t v);
+void serial_print_dec(int32_t v);
 
 #endif

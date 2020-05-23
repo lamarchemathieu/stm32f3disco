@@ -8,9 +8,18 @@
 #include "stm32f3xx_ll_utils.h"
 #include "stm32f3xx_ll_usart.h"
 #include "serial.h"
+#include "i2c.h"
 
 void SystemClock_Config(void);
 
+typedef struct 
+{
+	int16_t x;
+	int16_t y;
+	int16_t z;
+} acc_t;
+
+uint32_t acc_get(acc_t *acc);
 
 int main(void)
 {
@@ -28,6 +37,7 @@ int main(void)
 	LL_GPIO_Init(GPIOE, &gpios);
 
 	serial_init(115200);
+	i2c_init();
 
 	LL_RCC_ClocksTypeDef rcc_clocks;
 	LL_RCC_GetSystemClocksFreq(&rcc_clocks);
@@ -48,11 +58,90 @@ int main(void)
 	serial_print_dec(rcc_clocks.PCLK2_Frequency);
 	serial_print("\r\n");
 
+	
+	serial_print("I2C detection start :\r\n");
+	uint8_t addr = 0;
+	for(addr = 8; addr < 120; addr++)
+	{
+		if (i2c_detect(addr))
+		{
+			serial_print(" - I2C at ");
+			serial_print_hex8(addr);
+			serial_print("\r\n");
+		}
+	}
+	serial_print("I2C detection end.\r\n");
+	
+	uint8_t ira, irb, irc;
+
+	if (i2c_read_reg(0x1E, 0x0A, &ira))
+	{
+		serial_print("IRA = ");
+		serial_print_hex8(ira);
+		serial_print("\r\n");
+	}
+
+	if (i2c_read_reg(0x1E, 0x0B, &irb))
+	{
+		serial_print("IRb = ");
+		serial_print_hex8(irb);
+		serial_print("\r\n");
+	}
+
+	if (i2c_read_reg(0x1E, 0x0C, &irc))
+	{
+		serial_print("IRC = ");
+		serial_print_hex8(irc);
+		serial_print("\r\n");
+	}
+
+	i2c_write_reg(0x19, 0x20, 0x97);
+
 	while (1)
 	{
-		
+		acc_t a;
+		if (acc_get(&a))
+		{
+			serial_print_dec(a.x);
+			serial_print(", ");
+			serial_print_dec(a.y);
+			serial_print(", ");
+			serial_print_dec(a.z);
+			serial_print("\r\n");
+		}
+
+
 	}
 }
+
+uint32_t acc_get(acc_t *acc)
+{
+	uint8_t buf[2];
+
+	if (!i2c_read_reg(0x19, 0x28, &buf[0]))
+		return 0;
+	if (!i2c_read_reg(0x19, 0x29, &buf[1]))
+		return 0;
+
+	acc->x = (buf[1] << 8)| (buf[0] << 0);
+
+	if (!i2c_read_reg(0x19, 0x2A, &buf[0]))
+		return 0;
+	if (!i2c_read_reg(0x19, 0x2B, &buf[1]))
+		return 0;
+
+	acc->y = (buf[1] << 8)| (buf[0] << 0);
+
+	if (!i2c_read_reg(0x19, 0x2C, &buf[0]))
+		return 0;
+	if (!i2c_read_reg(0x19, 0x2D, &buf[1]))
+		return 0;
+
+	acc->z = (buf[1] << 8)| (buf[0] << 0);
+
+	return 1;
+}
+
 
 void SysTick_Handler(void)
 {

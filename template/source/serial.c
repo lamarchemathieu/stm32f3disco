@@ -77,6 +77,7 @@ void USART1_IRQHandler(void)
 	}
 }
 
+
 static const char _hex[] = "0123456789ABCDEF";
 
 void serial_print_hex32(uint32_t v)
@@ -140,11 +141,18 @@ void serial_print_bin8(uint8_t v)
 
 
 
-void serial_print_dec(uint32_t v)
+void serial_print_dec(int32_t v)
 {
 	uint32_t started = 0;
 	uint32_t i = 0;
-	uint32_t div = 1000000000;
+	int32_t div = 1000000000;
+
+	if (v < 0)
+	{
+		serial_put('-');
+		v = -v;
+	}
+
 	for(i=0; i<10; i++)	
 	{
 		uint32_t tmp = v / div;
