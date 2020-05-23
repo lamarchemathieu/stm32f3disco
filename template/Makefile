@@ -74,7 +74,7 @@ $(ELF) : $(OBJS)
 	@echo " AS" $(notdir $@)
 	@$(AS) $(ASFLAGS) $< -o $@
 
-flash : $(BIN)
+flash : $(BIN) size
 	@ST-LINK_CLI -c SWD -P $(BIN) 0x08000000 -V -Rst
 
 size : $(ELF)
