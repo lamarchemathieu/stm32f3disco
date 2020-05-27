@@ -7,6 +7,7 @@
 #include "stm32f3xx_ll_system.h"
 #include "stm32f3xx_ll_utils.h"
 #include "stm32f3xx_ll_usart.h"
+#include "utils.h"
 #include "serial.h"
 #include "i2c.h"
 
@@ -27,6 +28,8 @@ int main(void)
 
 	SystemClock_Config();
 
+	tick_init();
+
 	LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOE);
 	LL_GPIO_StructInit(&gpios);
 	gpios.Pin = LL_GPIO_PIN_8 | LL_GPIO_PIN_9 | LL_GPIO_PIN_10 | LL_GPIO_PIN_11 | LL_GPIO_PIN_12 | LL_GPIO_PIN_13 | LL_GPIO_PIN_14 | LL_GPIO_PIN_15;
@@ -39,11 +42,11 @@ int main(void)
 	serial_init(115200);
 	i2c_init();
 
+	serial_print("Hello world !\r\n");
+
+
 	LL_RCC_ClocksTypeDef rcc_clocks;
 	LL_RCC_GetSystemClocksFreq(&rcc_clocks);
-	SysTick_Config(rcc_clocks.HCLK_Frequency / 10);
-
-	serial_print("Hello world !\r\n");
 
 	serial_print("SYSCLK_Frequency = ");
 	serial_print_dec(rcc_clocks.SYSCLK_Frequency);
@@ -83,7 +86,7 @@ int main(void)
 
 	if (i2c_read_reg(0x1E, 0x0B, &irb))
 	{
-		serial_print("IRb = ");
+		serial_print("IRB = ");
 		serial_print_hex8(irb);
 		serial_print("\r\n");
 	}
@@ -95,23 +98,37 @@ int main(void)
 		serial_print("\r\n");
 	}
 
-	i2c_write_reg(0x19, 0x20, 0x97);
+	i2c_write_reg(0x19, 0x20, 0x97);//Normal, ODR = 1.344kHz, X,Y,Z En
+	i2c_write_reg(0x19, 0x23, 0x00);//Continuous, LSB first, FS = +/-2g
+
+	uint64_t last = tick_get();
 
 	while (1)
 	{
-		/*
-		acc_t a;
-		if (acc_get(&a))
-		{
-			serial_print_dec(a.x);
-			serial_print(", ");
-			serial_print_dec(a.y);
-			serial_print(", ");
-			serial_print_dec(a.z);
-			serial_print("\r\n");
-		}
-*/
+		uint64_t now = tick_get();
 
+		if (now - last >= 10)
+		{
+			last = now;
+
+			acc_t a;
+			if (acc_get(&a))
+			{
+				serial_print_dec(a.x);
+				serial_print(", ");
+				serial_print_dec(a.y);
+				serial_print(", ");
+				serial_print_dec(a.z);
+				serial_print("\r\n");
+
+
+				/*serial_put(0xAA);
+				serial_transmit(&a.x, 2);
+				serial_transmit(&a.y, 2);
+				serial_transmit(&a.z, 2);
+				serial_put(0x55);*/
+			}
+		}
 	}
 }
 
@@ -143,11 +160,6 @@ uint32_t acc_get(acc_t *acc)
 	return 1;
 }
 
-
-void SysTick_Handler(void)
-{
-	LL_GPIO_TogglePin(GPIOE, LL_GPIO_PIN_8);
-}
 
 void SystemClock_Config(void)
 {
