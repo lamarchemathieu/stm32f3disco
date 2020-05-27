@@ -99,6 +99,7 @@ int main(void)
 
 	while (1)
 	{
+		/*
 		acc_t a;
 		if (acc_get(&a))
 		{
@@ -109,7 +110,7 @@ int main(void)
 			serial_print_dec(a.z);
 			serial_print("\r\n");
 		}
-
+*/
 
 	}
 }

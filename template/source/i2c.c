@@ -40,13 +40,14 @@ uint32_t i2c_detect(uint8_t addr)
 {
 	uint32_t ret = 0;
 
-	LL_I2C_HandleTransfer(I2C1, addr << 1, LL_I2C_ADDRSLAVE_7BIT, 1, LL_I2C_MODE_AUTOEND, LL_I2C_GENERATE_START_WRITE);
+	LL_I2C_HandleTransfer(I2C1, addr << 1, LL_I2C_ADDRSLAVE_7BIT, 1, LL_I2C_MODE_AUTOEND, LL_I2C_GENERATE_START_READ);
 
 	while(!LL_I2C_IsActiveFlag_STOP(I2C1))
 	{
-		if (LL_I2C_IsActiveFlag_TXIS(I2C1))
+		if (LL_I2C_IsActiveFlag_RXNE(I2C1))
 		{
-			LL_I2C_TransmitData8(I2C1, 0x00);
+			uint8_t c = LL_I2C_ReceiveData8(I2C1);
+			(void)c;
 			ret = 1;
 		}
 	}
