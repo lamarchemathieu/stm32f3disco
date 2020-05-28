@@ -275,6 +275,9 @@ void serial_print_dec(int32_t v)
 	uint32_t i = 0;
 	int32_t div = 1000000000;
 
+	if (v == 0)
+		serial_write('0', 1);
+
 	if (v < 0)
 	{
 		serial_write('-', 1);
