@@ -11,6 +11,9 @@
 #include "serial.h"
 #include "i2c.h"
 
+#define ACC_ADDR (0x19)
+#define MAG_ADDR (0x1E)
+
 #define ABS(a) (((a) > 0) ? (a) : (-(a)))
 
 void SystemClock_Config(void);
@@ -22,7 +25,15 @@ typedef struct
 	int16_t z;
 } acc_t;
 
+typedef struct 
+{
+	int16_t x;
+	int16_t y;
+	int16_t z;
+} mag_t;
+
 uint32_t acc_get(acc_t *acc);
+uint32_t mag_get(mag_t *mag);
 
 int main(void)
 {
@@ -78,29 +89,35 @@ int main(void)
 	
 	uint8_t ira, irb, irc;
 
-	if (i2c_read_reg(0x1E, 0x0A, &ira))
+	if (i2c_read_reg(MAG_ADDR, 0x0A, &ira))
 	{
 		serial_print("IRA = ");
 		serial_print_hex8(ira);
 		serial_print("\r\n");
 	}
 
-	if (i2c_read_reg(0x1E, 0x0B, &irb))
+	if (i2c_read_reg(MAG_ADDR, 0x0B, &irb))
 	{
 		serial_print("IRB = ");
 		serial_print_hex8(irb);
 		serial_print("\r\n");
 	}
 
-	if (i2c_read_reg(0x1E, 0x0C, &irc))
+	if (i2c_read_reg(MAG_ADDR, 0x0C, &irc))
 	{
 		serial_print("IRC = ");
 		serial_print_hex8(irc);
 		serial_print("\r\n\r\n");
 	}
 
-	i2c_write_reg(0x19, 0x20, 0x97);//Normal, ODR = 1.344kHz, X,Y,Z En
-	i2c_write_reg(0x19, 0x23, 0x00);//Continuous, LSB first, FS = +/-2g
+	i2c_write_reg(ACC_ADDR, 0x20, 0x97);//Normal, ODR = 1.344kHz, X,Y,Z En
+	i2c_write_reg(ACC_ADDR, 0x23, 0x00);//Continuous, LSB first, FS = +/-2g
+
+
+	i2c_write_reg(MAG_ADDR, 0x00, 0x9C);// temp_en, DO = 220Hz
+	i2c_write_reg(MAG_ADDR, 0x01, 0xE0);//+/-8.1 Gauss
+	i2c_write_reg(MAG_ADDR, 0x02, 0x00);//Continuous mode
+
 
 	uint64_t last = tick_get();
 
@@ -115,13 +132,6 @@ int main(void)
 			acc_t a;
 			if (acc_get(&a))
 			{
-				serial_print_dec(a.x);
-				serial_print(", ");
-				serial_print_dec(a.y);
-				serial_print(", ");
-				serial_print_dec(a.z);
-				serial_print("\r\n");
-
 				uint32_t pins = 0;
 
 				if ((a.x > 5700) && (a.y > 5700))
@@ -152,6 +162,18 @@ int main(void)
 				serial_transmit(&a.z, 2);
 				serial_put(0x55);*/
 			}
+
+			mag_t m;
+			if (mag_get(&m))
+			{
+				serial_print_dec(m.x);
+				serial_print(", ");
+				serial_print_dec(m.y);
+				serial_print(", ");
+				serial_print_dec(m.z);
+				serial_print("\r\n");
+			}
+
 		}
 	}
 }
@@ -160,26 +182,54 @@ uint32_t acc_get(acc_t *acc)
 {
 	uint8_t buf[2];
 
-	if (!i2c_read_reg(0x19, 0x28, &buf[0]))
+	if (!i2c_read_reg(ACC_ADDR, 0x28, &buf[0]))
 		return 0;
-	if (!i2c_read_reg(0x19, 0x29, &buf[1]))
+	if (!i2c_read_reg(ACC_ADDR, 0x29, &buf[1]))
 		return 0;
 
 	acc->x = (buf[1] << 8) | (buf[0] << 0);
 
-	if (!i2c_read_reg(0x19, 0x2A, &buf[0]))
+	if (!i2c_read_reg(ACC_ADDR, 0x2A, &buf[0]))
 		return 0;
-	if (!i2c_read_reg(0x19, 0x2B, &buf[1]))
+	if (!i2c_read_reg(ACC_ADDR, 0x2B, &buf[1]))
 		return 0;
 
 	acc->y = (buf[1] << 8) | (buf[0] << 0);
 
-	if (!i2c_read_reg(0x19, 0x2C, &buf[0]))
+	if (!i2c_read_reg(ACC_ADDR, 0x2C, &buf[0]))
 		return 0;
-	if (!i2c_read_reg(0x19, 0x2D, &buf[1]))
+	if (!i2c_read_reg(ACC_ADDR, 0x2D, &buf[1]))
 		return 0;
 
 	acc->z = (buf[1] << 8) | (buf[0] << 0);
+
+	return 1;
+}
+
+uint32_t mag_get(mag_t *mag)
+{
+	uint8_t buf[2];
+
+	if (!i2c_read_reg(MAG_ADDR, 0x04, &buf[0]))
+		return 0;
+	if (!i2c_read_reg(MAG_ADDR, 0x03, &buf[1]))
+		return 0;
+
+	mag->x = (buf[1] << 8) | (buf[0] << 0);
+
+	if (!i2c_read_reg(MAG_ADDR, 0x06, &buf[0]))
+		return 0;
+	if (!i2c_read_reg(MAG_ADDR, 0x05, &buf[1]))
+		return 0;
+
+	mag->y = (buf[1] << 8) | (buf[0] << 0);
+
+	if (!i2c_read_reg(MAG_ADDR, 0x08, &buf[0]))
+		return 0;
+	if (!i2c_read_reg(MAG_ADDR, 0x07, &buf[1]))
+		return 0;
+
+	mag->z = (buf[1] << 8) | (buf[0] << 0);
 
 	return 1;
 }
