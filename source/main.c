@@ -165,21 +165,21 @@ uint32_t acc_get(acc_t *acc)
 	if (!i2c_read_reg(0x19, 0x29, &buf[1]))
 		return 0;
 
-	acc->x = (buf[1] << 8)| (buf[0] << 0);
+	acc->x = (buf[1] << 8) | (buf[0] << 0);
 
 	if (!i2c_read_reg(0x19, 0x2A, &buf[0]))
 		return 0;
 	if (!i2c_read_reg(0x19, 0x2B, &buf[1]))
 		return 0;
 
-	acc->y = (buf[1] << 8)| (buf[0] << 0);
+	acc->y = (buf[1] << 8) | (buf[0] << 0);
 
 	if (!i2c_read_reg(0x19, 0x2C, &buf[0]))
 		return 0;
 	if (!i2c_read_reg(0x19, 0x2D, &buf[1]))
 		return 0;
 
-	acc->z = (buf[1] << 8)| (buf[0] << 0);
+	acc->z = (buf[1] << 8) | (buf[0] << 0);
 
 	return 1;
 }

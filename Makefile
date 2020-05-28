@@ -21,23 +21,23 @@ OBJDUMP = arm-none-eabi-objdump
 SIZE = arm-none-eabi-size
 
 SRCS =	$(wildcard source/*.c) \
-		../../STM32Cube_FW_F3_V1.11.0/Drivers/CMSIS/Device/ST/STM32F3xx/Source/Templates/system_stm32f3xx.c \
-		../../STM32Cube_FW_F3_V1.11.0/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_ll_gpio.c \
-		../../STM32Cube_FW_F3_V1.11.0/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_ll_rcc.c \
-		../../STM32Cube_FW_F3_V1.11.0/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_ll_utils.c \
-		../../STM32Cube_FW_F3_V1.11.0/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_ll_usart.c \
-		../../STM32Cube_FW_F3_V1.11.0/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_ll_i2c.c \
+		../STM32Cube_FW_F3_V1.11.0/Drivers/CMSIS/Device/ST/STM32F3xx/Source/Templates/system_stm32f3xx.c \
+		../STM32Cube_FW_F3_V1.11.0/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_ll_gpio.c \
+		../STM32Cube_FW_F3_V1.11.0/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_ll_rcc.c \
+		../STM32Cube_FW_F3_V1.11.0/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_ll_utils.c \
+		../STM32Cube_FW_F3_V1.11.0/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_ll_usart.c \
+		../STM32Cube_FW_F3_V1.11.0/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_ll_i2c.c \
 
 
 
-SRCS_ASM = ../../STM32Cube_FW_F3_V1.11.0/Drivers/CMSIS/Device/ST/STM32F3xx/Source/Templates/gcc/startup_stm32f303xc.s
+SRCS_ASM = ../STM32Cube_FW_F3_V1.11.0/Drivers/CMSIS/Device/ST/STM32F3xx/Source/Templates/gcc/startup_stm32f303xc.s
 
 		
 INCLUDES =	-I./include \
-			-I../../STM32Cube_FW_F3_V1.11.0/Drivers/CMSIS/Include \
-			-I../../STM32Cube_FW_F3_V1.11.0/Drivers/CMSIS//Device/ST/STM32F3xx/Include \
-			-I../../STM32Cube_FW_F3_V1.11.0/Drivers/STM32F3xx_HAL_Driver/Inc/Legacy \
-			-I../../STM32Cube_FW_F3_V1.11.0/Drivers/STM32F3xx_HAL_Driver/Inc 
+			-I../STM32Cube_FW_F3_V1.11.0/Drivers/CMSIS/Include \
+			-I../STM32Cube_FW_F3_V1.11.0/Drivers/CMSIS//Device/ST/STM32F3xx/Include \
+			-I../STM32Cube_FW_F3_V1.11.0/Drivers/STM32F3xx_HAL_Driver/Inc/Legacy \
+			-I../STM32Cube_FW_F3_V1.11.0/Drivers/STM32F3xx_HAL_Driver/Inc 
 
 OBJS = $(SRCS:.c=.o) $(SRCS_ASM:.s=.o)
 DEPS = $(SRCS:.c=.d) $(SRCS_ASM:.s=.d)
