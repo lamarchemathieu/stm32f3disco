@@ -11,6 +11,8 @@
 #include "serial.h"
 #include "i2c.h"
 
+#define ABS(a) (((a) > 0) ? (a) : (-(a)))
+
 void SystemClock_Config(void);
 
 typedef struct 
@@ -120,6 +122,29 @@ int main(void)
 				serial_print_dec(a.z);
 				serial_print("\r\n");
 
+				uint32_t pins = 0;
+
+				if ((a.x > 5700) && (a.y > 5700))
+					pins |= LL_GPIO_PIN_8;
+				else if ((a.x > 5700) && (a.y < -5700))
+					pins |= LL_GPIO_PIN_10;
+				else if ((a.x < -5700) && (a.y > 5700))
+					pins |= LL_GPIO_PIN_14;
+				else if ((a.x < -5700) && (a.y < -5700))
+					pins |= LL_GPIO_PIN_12;
+				else if (a.x > 5700)
+					pins |= LL_GPIO_PIN_9;
+				else if (a.x < -5700)
+					pins |= LL_GPIO_PIN_13;
+				else if (a.y > 5700)
+					pins |= LL_GPIO_PIN_15;
+				else if (a.y < -5700)
+					pins |= LL_GPIO_PIN_11;
+
+				uint32_t tmp = GPIOE->ODR;
+				tmp &= 0xFFFF0000;
+				tmp |= pins;
+				GPIOE->ODR = tmp;
 
 				/*serial_put(0xAA);
 				serial_transmit(&a.x, 2);
