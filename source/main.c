@@ -30,6 +30,7 @@ typedef struct
 	int16_t x;
 	int16_t y;
 	int16_t z;
+	int16_t t;
 } mag_t;
 
 uint32_t acc_get(acc_t *acc);
@@ -166,6 +167,8 @@ int main(void)
 			mag_t m;
 			if (mag_get(&m))
 			{
+				serial_print_dec(m.t);
+				serial_print(", ");
 				serial_print_dec(m.x);
 				serial_print(", ");
 				serial_print_dec(m.y);
@@ -230,6 +233,13 @@ uint32_t mag_get(mag_t *mag)
 		return 0;
 
 	mag->z = (buf[1] << 8) | (buf[0] << 0);
+
+	if (!i2c_read_reg(MAG_ADDR, 0x32, &buf[0]))
+		return 0;
+	if (!i2c_read_reg(MAG_ADDR, 0x31, &buf[1]))
+		return 0;
+
+	mag->t = (buf[1] << 8) | (buf[0] << 0);
 
 	return 1;
 }
