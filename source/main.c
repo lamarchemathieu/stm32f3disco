@@ -41,7 +41,7 @@ int main(void)
 	gpios.Speed      = LL_GPIO_SPEED_FREQ_HIGH;
 	LL_GPIO_Init(GPIOE, &gpios);
 
-	serial_init(115200);
+	serial_init();
 	i2c_init();
 
 	serial_print("\r\nHello world !\r\n\r\n");
