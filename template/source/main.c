@@ -42,8 +42,7 @@ int main(void)
 	serial_init(115200);
 	i2c_init();
 
-	serial_print("Hello world !\r\n");
-
+	serial_print("\r\nHello world !\r\n\r\n");
 
 	LL_RCC_ClocksTypeDef rcc_clocks;
 	LL_RCC_GetSystemClocksFreq(&rcc_clocks);
@@ -59,7 +58,7 @@ int main(void)
 	serial_print("\r\n");
 	serial_print("PCLK2_Frequency = ");
 	serial_print_dec(rcc_clocks.PCLK2_Frequency);
-	serial_print("\r\n");
+	serial_print("\r\n\r\n");
 
 	
 	serial_print("I2C detection start :\r\n");
@@ -73,7 +72,7 @@ int main(void)
 			serial_print("\r\n");
 		}
 	}
-	serial_print("I2C detection end.\r\n");
+	serial_print("I2C detection end.\r\n\r\n");
 	
 	uint8_t ira, irb, irc;
 
@@ -95,7 +94,7 @@ int main(void)
 	{
 		serial_print("IRC = ");
 		serial_print_hex8(irc);
-		serial_print("\r\n");
+		serial_print("\r\n\r\n");
 	}
 
 	i2c_write_reg(0x19, 0x20, 0x97);//Normal, ODR = 1.344kHz, X,Y,Z En
