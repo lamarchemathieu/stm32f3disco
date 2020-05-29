@@ -27,6 +27,7 @@ SRCS =	$(wildcard source/*.c) \
 		../STM32Cube_FW_F3_V1.11.0/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_ll_utils.c \
 		../STM32Cube_FW_F3_V1.11.0/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_ll_usart.c \
 		../STM32Cube_FW_F3_V1.11.0/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_ll_i2c.c \
+		../STM32Cube_FW_F3_V1.11.0/Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_ll_tim.c \
 
 
 

@@ -10,6 +10,7 @@
 #include "utils.h"
 #include "serial.h"
 #include "i2c.h"
+#include "timer.h"
 
 #define ACC_ADDR (0x19)
 #define MAG_ADDR (0x1E)
@@ -55,6 +56,7 @@ int main(void)
 
 	serial_init();
 	i2c_init();
+	timer_init();
 
 	serial_print("\r\nHello world !\r\n\r\n");
 
@@ -126,10 +128,14 @@ int main(void)
 	{
 		uint64_t now = tick_get();
 
-		if (now - last >= 10)
+		if (now - last >= 100)
 		{
 			last = now;
 
+			serial_print_dec(timer_get());
+			serial_print("\r\n");
+
+/*
 			acc_t a;
 			if (acc_get(&a))
 			{
@@ -156,12 +162,6 @@ int main(void)
 				tmp &= 0xFFFF0000;
 				tmp |= pins;
 				GPIOE->ODR = tmp;
-
-				/*serial_put(0xAA);
-				serial_transmit(&a.x, 2);
-				serial_transmit(&a.y, 2);
-				serial_transmit(&a.z, 2);
-				serial_put(0x55);*/
 			}
 
 			mag_t m;
@@ -176,7 +176,7 @@ int main(void)
 				serial_print_dec(m.z);
 				serial_print("\r\n");
 			}
-
+*/
 		}
 	}
 }
