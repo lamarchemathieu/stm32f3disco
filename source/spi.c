@@ -56,3 +56,20 @@ void spi_read_write(const uint8_t *tx, uint8_t *rx, uint32_t len)
 	}
 }
 
+void spi_write_reg(uint8_t reg, uint8_t value)
+{
+	uint8_t tx[2] = { reg, value};
+	uint8_t rx[2];
+
+	spi_read_write(tx, rx, 2);
+}
+
+void spi_read_reg(uint8_t reg, uint8_t *value)
+{
+	uint8_t tx[2] = { 0x80 | reg, 0xFF};
+	uint8_t rx[2];
+
+	spi_read_write(tx, rx, 2);
+
+	*value = rx[1];
+}

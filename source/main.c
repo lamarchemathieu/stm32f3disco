@@ -142,25 +142,19 @@ int main(void)
 	i2c_write_reg(MAG_ADDR, 0x02, 0x00);//Continuous mode
 
 
-	uint8_t tx[10] = {0x40 | 0x20, 0x0F };
-	uint8_t rx[10];
 
 	LL_GPIO_ResetOutputPin(GPIOE, LL_GPIO_PIN_3);
-
-	spi_read_write(tx, rx, 2);
-
-	serial_print("SPI = ");
-	for(uint32_t i=0;i<6;i++)
-	{
-		serial_print_hex8(rx[i]);
-		serial_print(", ");
-	}
-	serial_print("\r\n");
-
-
+	spi_write_reg(0x20, 0x0F);
 	LL_GPIO_SetOutputPin(GPIOE, LL_GPIO_PIN_3);
 
+	uint8_t wai;
+	LL_GPIO_ResetOutputPin(GPIOE, LL_GPIO_PIN_3);
+	spi_read_reg(0x0F, &wai);
+	LL_GPIO_SetOutputPin(GPIOE, LL_GPIO_PIN_3);
 
+	serial_print("IRC = ");
+	serial_print_hex8(wai);
+	serial_print("\r\n\r\n");
 
 	uint64_t last = tick_get();
 
@@ -201,34 +195,42 @@ int main(void)
 				GPIOE->ODR = tmp;
 			}
 
+			uint8_t rx[6];
 
-	LL_GPIO_ResetOutputPin(GPIOE, LL_GPIO_PIN_3);
+			LL_GPIO_ResetOutputPin(GPIOE, LL_GPIO_PIN_3);
+			spi_read_reg(0x28, &rx[0]);
+			LL_GPIO_SetOutputPin(GPIOE, LL_GPIO_PIN_3);
 
+			LL_GPIO_ResetOutputPin(GPIOE, LL_GPIO_PIN_3);
+			spi_read_reg(0x29, &rx[1]);
+			LL_GPIO_SetOutputPin(GPIOE, LL_GPIO_PIN_3);
 
-	tx[0] = 0xC0 | 0x28;
-	spi_read_write(tx, rx, 7);
-/*
-	serial_print("SPI = ");
-	for(uint32_t i=0;i<7;i++)
-	{
-		serial_print_hex8(rx[i]);
-		serial_print(", ");
-	}
-	serial_print("\r\n");
+			LL_GPIO_ResetOutputPin(GPIOE, LL_GPIO_PIN_3);
+			spi_read_reg(0x2A, &rx[2]);
+			LL_GPIO_SetOutputPin(GPIOE, LL_GPIO_PIN_3);
 
-*/
-	LL_GPIO_SetOutputPin(GPIOE, LL_GPIO_PIN_3);
+			LL_GPIO_ResetOutputPin(GPIOE, LL_GPIO_PIN_3);
+			spi_read_reg(0x2B, &rx[3]);
+			LL_GPIO_SetOutputPin(GPIOE, LL_GPIO_PIN_3);
 
-	int16_t g_x = (rx[2] << 8) | rx[1];
-	int16_t g_y = (rx[4] << 8) | rx[3];
-	int16_t g_z = (rx[6] << 8) | rx[5];
+			LL_GPIO_ResetOutputPin(GPIOE, LL_GPIO_PIN_3);
+			spi_read_reg(0x2C, &rx[4]);
+			LL_GPIO_SetOutputPin(GPIOE, LL_GPIO_PIN_3);
+			
+			LL_GPIO_ResetOutputPin(GPIOE, LL_GPIO_PIN_3);
+			spi_read_reg(0x2D, &rx[5]);
+			LL_GPIO_SetOutputPin(GPIOE, LL_GPIO_PIN_3);
 
-				serial_print_dec(g_x);
-				serial_print(", ");
-				serial_print_dec(g_y);
-				serial_print(", ");
-				serial_print_dec(g_z);
-				serial_print("\r\n");
+			int16_t g_x = (rx[1] << 8) | rx[0];
+			int16_t g_y = (rx[3] << 8) | rx[2];
+			int16_t g_z = (rx[5] << 8) | rx[4];
+
+			serial_print_dec(g_x);
+			serial_print(", ");
+			serial_print_dec(g_y);
+			serial_print(", ");
+			serial_print_dec(g_z);
+			serial_print("\r\n");
 
 
 /*
