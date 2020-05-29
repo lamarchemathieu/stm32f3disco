@@ -1,4 +1,6 @@
 
+#include <string.h>
+
 #include "spi.h"
 #include "stm32f3xx_ll_spi.h"
 #include "stm32f3xx_ll_gpio.h"
@@ -42,15 +44,10 @@ void spi_read_write(const uint8_t *tx, uint8_t *rx, uint32_t len)
 
 	for(uint32_t i=0;i<len;i++)
 	{
-		//serial_print_hex32(SPI1->SR);
-		//serial_print("-\r\n");
-
 		LL_SPI_TransmitData8(SPI1, tx[i]);
 
 		while(!LL_SPI_IsActiveFlag_RXNE(SPI1))
 		{
-			//serial_print_hex32(SPI1->SR);
-			//serial_print("+\r\n");
 		}
 		rx[i] = LL_SPI_ReceiveData8(SPI1);
 	}
@@ -72,4 +69,27 @@ void spi_read_reg(uint8_t reg, uint8_t *value)
 	spi_read_write(tx, rx, 2);
 
 	*value = rx[1];
+}
+
+void spi_write_regs(uint8_t reg, const uint8_t *values, uint32_t len)
+{
+	uint8_t tx[1 + len];
+	uint8_t rx[1 + len];
+
+	tx[0] = 0x40 | reg;
+	memcpy(&tx[1], values, len);
+
+	spi_read_write(tx, rx, 1 + len);
+}
+
+void spi_read_regs(uint8_t reg, uint8_t *values, uint32_t len)
+{
+	uint8_t tx[1 + len];
+	uint8_t rx[1 + len];
+
+	tx[0] = 0xC0 | reg;
+
+	spi_read_write(tx, rx, 1 + len);
+
+	memcpy(values, &rx[1], len);
 }

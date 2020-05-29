@@ -198,27 +198,7 @@ int main(void)
 			uint8_t rx[6];
 
 			LL_GPIO_ResetOutputPin(GPIOE, LL_GPIO_PIN_3);
-			spi_read_reg(0x28, &rx[0]);
-			LL_GPIO_SetOutputPin(GPIOE, LL_GPIO_PIN_3);
-
-			LL_GPIO_ResetOutputPin(GPIOE, LL_GPIO_PIN_3);
-			spi_read_reg(0x29, &rx[1]);
-			LL_GPIO_SetOutputPin(GPIOE, LL_GPIO_PIN_3);
-
-			LL_GPIO_ResetOutputPin(GPIOE, LL_GPIO_PIN_3);
-			spi_read_reg(0x2A, &rx[2]);
-			LL_GPIO_SetOutputPin(GPIOE, LL_GPIO_PIN_3);
-
-			LL_GPIO_ResetOutputPin(GPIOE, LL_GPIO_PIN_3);
-			spi_read_reg(0x2B, &rx[3]);
-			LL_GPIO_SetOutputPin(GPIOE, LL_GPIO_PIN_3);
-
-			LL_GPIO_ResetOutputPin(GPIOE, LL_GPIO_PIN_3);
-			spi_read_reg(0x2C, &rx[4]);
-			LL_GPIO_SetOutputPin(GPIOE, LL_GPIO_PIN_3);
-			
-			LL_GPIO_ResetOutputPin(GPIOE, LL_GPIO_PIN_3);
-			spi_read_reg(0x2D, &rx[5]);
+			spi_read_regs(0x28, rx, 6);
 			LL_GPIO_SetOutputPin(GPIOE, LL_GPIO_PIN_3);
 
 			int16_t g_x = (rx[1] << 8) | rx[0];
