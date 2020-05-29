@@ -1,5 +1,6 @@
 
 #include <stdio.h>
+#include <stddef.h>
 
 #include "stm32f3xx_ll_gpio.h"
 #include "stm32f3xx_ll_bus.h"
@@ -37,6 +38,13 @@ typedef struct
 uint32_t acc_get(acc_t *acc);
 uint32_t mag_get(mag_t *mag);
 
+
+void tmr_callback(void *arg)
+{
+	LL_GPIO_TogglePin(GPIOA, LL_GPIO_PIN_8);
+}
+
+
 int main(void)
 {
 	LL_GPIO_InitTypeDef gpios;
@@ -54,9 +62,18 @@ int main(void)
 	gpios.Speed      = LL_GPIO_SPEED_FREQ_HIGH;
 	LL_GPIO_Init(GPIOE, &gpios);
 
+
+	LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
+	gpios.Pin = LL_GPIO_PIN_8;
+	gpios.Mode = LL_GPIO_MODE_OUTPUT;
+	gpios.Pull = LL_GPIO_PULL_NO;
+	gpios.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+	gpios.Speed      = LL_GPIO_SPEED_FREQ_HIGH;
+	LL_GPIO_Init(GPIOA, &gpios);
+
 	serial_init();
 	i2c_init();
-	timer_init();
+	timer_init(tmr_callback, NULL);
 
 	serial_print("\r\nHello world !\r\n\r\n");
 
@@ -132,10 +149,6 @@ int main(void)
 		{
 			last = now;
 
-			serial_print_dec(timer_get());
-			serial_print("\r\n");
-
-/*
 			acc_t a;
 			if (acc_get(&a))
 			{
@@ -176,7 +189,7 @@ int main(void)
 				serial_print_dec(m.z);
 				serial_print("\r\n");
 			}
-*/
+
 		}
 	}
 }
