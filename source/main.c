@@ -12,6 +12,7 @@
 #include "serial.h"
 #include "i2c.h"
 #include "timer.h"
+#include "spi.h"
 
 #define ACC_ADDR (0x19)
 #define MAG_ADDR (0x1E)
@@ -55,13 +56,15 @@ int main(void)
 
 	LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOE);
 	LL_GPIO_StructInit(&gpios);
-	gpios.Pin = LL_GPIO_PIN_8 | LL_GPIO_PIN_9 | LL_GPIO_PIN_10 | LL_GPIO_PIN_11 | LL_GPIO_PIN_12 | LL_GPIO_PIN_13 | LL_GPIO_PIN_14 | LL_GPIO_PIN_15;
+	gpios.Pin = LL_GPIO_PIN_3 | LL_GPIO_PIN_8 | LL_GPIO_PIN_9 | LL_GPIO_PIN_10 | LL_GPIO_PIN_11 | LL_GPIO_PIN_12 | LL_GPIO_PIN_13 | LL_GPIO_PIN_14 | LL_GPIO_PIN_15;
 	gpios.Mode = LL_GPIO_MODE_OUTPUT;
 	gpios.Pull = LL_GPIO_PULL_NO;
 	gpios.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
 	gpios.Speed      = LL_GPIO_SPEED_FREQ_HIGH;
 	LL_GPIO_Init(GPIOE, &gpios);
 
+
+	LL_GPIO_SetOutputPin(GPIOE, LL_GPIO_PIN_3);
 
 	LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
 	gpios.Pin = LL_GPIO_PIN_8;
@@ -71,10 +74,10 @@ int main(void)
 	gpios.Speed      = LL_GPIO_SPEED_FREQ_HIGH;
 	LL_GPIO_Init(GPIOA, &gpios);
 
+	spi_init();
 	serial_init();
 	i2c_init();
 	timer_init(tmr_callback, NULL);
-
 	serial_print("\r\nHello world !\r\n\r\n");
 
 	LL_RCC_ClocksTypeDef rcc_clocks;
@@ -139,7 +142,28 @@ int main(void)
 	i2c_write_reg(MAG_ADDR, 0x02, 0x00);//Continuous mode
 
 
+	uint8_t tx[10] = {0x40 | 0x20, 0x0F };
+	uint8_t rx[10];
+
+	LL_GPIO_ResetOutputPin(GPIOE, LL_GPIO_PIN_3);
+
+	spi_read_write(tx, rx, 2);
+
+	serial_print("SPI = ");
+	for(uint32_t i=0;i<6;i++)
+	{
+		serial_print_hex8(rx[i]);
+		serial_print(", ");
+	}
+	serial_print("\r\n");
+
+
+	LL_GPIO_SetOutputPin(GPIOE, LL_GPIO_PIN_3);
+
+
+
 	uint64_t last = tick_get();
+
 
 	while (1)
 	{
@@ -177,6 +201,37 @@ int main(void)
 				GPIOE->ODR = tmp;
 			}
 
+
+	LL_GPIO_ResetOutputPin(GPIOE, LL_GPIO_PIN_3);
+
+
+	tx[0] = 0xC0 | 0x28;
+	spi_read_write(tx, rx, 7);
+/*
+	serial_print("SPI = ");
+	for(uint32_t i=0;i<7;i++)
+	{
+		serial_print_hex8(rx[i]);
+		serial_print(", ");
+	}
+	serial_print("\r\n");
+
+*/
+	LL_GPIO_SetOutputPin(GPIOE, LL_GPIO_PIN_3);
+
+	int16_t g_x = (rx[2] << 8) | rx[1];
+	int16_t g_y = (rx[4] << 8) | rx[3];
+	int16_t g_z = (rx[6] << 8) | rx[5];
+
+				serial_print_dec(g_x);
+				serial_print(", ");
+				serial_print_dec(g_y);
+				serial_print(", ");
+				serial_print_dec(g_z);
+				serial_print("\r\n");
+
+
+/*
 			mag_t m;
 			if (mag_get(&m))
 			{
@@ -189,7 +244,7 @@ int main(void)
 				serial_print_dec(m.z);
 				serial_print("\r\n");
 			}
-
+*/
 		}
 	}
 }
